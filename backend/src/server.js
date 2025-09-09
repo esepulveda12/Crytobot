@@ -123,20 +123,14 @@ async function initializeServices() {
     logger.info('Servicios inicializados correctamente');
   } catch (error) {
     logger.error('Error inicializando servicios:', error);
-<<<<<<< HEAD
     // Continuar ejecutando sin cerrar la aplicación
-=======
->>>>>>> 87b31a6a13e6a2e5166cc254a31f2e9c33c9ffca
   }
 }
 
 // Manejo de errores global
 process.on('uncaughtException', (error) => {
   logger.error('Excepción no capturada:', error);
-<<<<<<< HEAD
   // Continuar ejecutando sin cerrar la aplicación
-=======
->>>>>>> 87b31a6a13e6a2e5166cc254a31f2e9c33c9ffca
 });
 
 process.on('unhandledRejection', (reason, promise) => {
