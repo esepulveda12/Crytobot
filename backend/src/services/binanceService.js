@@ -63,20 +63,30 @@ class BinanceService {
     try {
       this.setCredentials(apiKey, secretKey);
       
+      // Usar timestamp en milisegundos como lo hace Binance
       const timestamp = Date.now();
       const queryString = `timestamp=${timestamp}`;
       const signature = this.generateSignature(queryString);
       
+      // Headers correctos para Binance
+      const headers = {
+        'X-MBX-APIKEY': apiKey
+      };
+      
+      // URL completa con query string y signature
+      const url = `${this.baseURL}/api/v3/account?${queryString}&signature=${signature}`;
+      
+      logger.info(`Validando credenciales con URL: ${url}`);
+      logger.info(`Headers: ${JSON.stringify(headers)}`);
+      
       // Usar endpoint que requiera autenticación para validar credenciales
-      const response = await axios.get(
-        `${this.baseURL}/api/v3/account?${queryString}&signature=${signature}`,
-        { headers: this.createAuthHeaders() }
-      );
+      const response = await axios.get(url, { headers });
 
       logger.info('Credenciales validadas correctamente');
       return response.status === 200;
     } catch (error) {
       logger.error('Error validando credenciales:', error.response?.data || error.message);
+      logger.error('Error completo:', error);
       return false;
     }
   }
