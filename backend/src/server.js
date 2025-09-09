@@ -123,14 +123,12 @@ async function initializeServices() {
     logger.info('Servicios inicializados correctamente');
   } catch (error) {
     logger.error('Error inicializando servicios:', error);
-    process.exit(1);
   }
 }
 
 // Manejo de errores global
 process.on('uncaughtException', (error) => {
   logger.error('Excepción no capturada:', error);
-  process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
