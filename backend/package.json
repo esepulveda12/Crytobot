@@ -4,7 +4,7 @@
   "description": "Backend para CryptoBot Spot - Trading Bot con Binance API",
   "main": "src/server.js",
   "scripts": {
-    "start": "node backend/src/server.js",
+    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest",
     "build": "echo 'No build step required'",
