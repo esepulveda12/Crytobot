@@ -20,17 +20,22 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Validar credenciales con Binance
+    logger.info(`=== INICIO LOGIN ===`);
+    logger.info(`API Key recibida: ${apiKey.substring(0, 10)}...`);
+    logger.info(`Secret Key recibida: ${secretKey.substring(0, 10)}...`);
+
+    // Validar credenciales con Binance directamente
     const isValid = await binanceService.validateCredentials(apiKey, secretKey);
     
     if (!isValid) {
+      logger.error('Validación falló - credenciales inválidas');
       return res.status(401).json({
         success: false,
         message: 'Credenciales de Binance inválidas'
       });
     }
 
-    // Encriptar y almacenar credenciales
+    // Encriptar y almacenar credenciales del usuario
     userCredentials = {
       apiKey: encryption.encrypt(apiKey),
       secretKey: encryption.encrypt(secretKey),
@@ -38,6 +43,7 @@ router.post('/login', async (req, res) => {
     };
 
     logger.info('Usuario autenticado correctamente');
+    logger.info(`=== FIN LOGIN EXITOSO ===`);
 
     res.json({
       success: true,

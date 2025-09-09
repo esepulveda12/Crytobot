@@ -27,12 +27,13 @@ class BinanceService {
   }
 
   // Generar firma para autenticación
-  generateSignature(queryString) {
-    if (!this.userCredentials) {
-      throw new Error('Credenciales no configuradas');
+  generateSignature(queryString, secretKey = null) {
+    const keyToUse = secretKey || (this.userCredentials ? this.userCredentials.secretKey : null);
+    if (!keyToUse) {
+      throw new Error('Secret Key no proporcionada');
     }
     return crypto
-      .createHmac('sha256', this.userCredentials.secretKey)
+      .createHmac('sha256', keyToUse)
       .update(queryString)
       .digest('hex');
   }
@@ -61,12 +62,21 @@ class BinanceService {
   // Verificar credenciales de API
   async validateCredentials(apiKey, secretKey) {
     try {
-      this.setCredentials(apiKey, secretKey);
+      logger.info(`=== INICIO VALIDACIÓN ===`);
+      logger.info(`API Key: ${apiKey.substring(0, 10)}...`);
+      logger.info(`Secret Key: ${secretKey.substring(0, 10)}...`);
+      logger.info(`Base URL: ${this.baseURL}`);
       
       // Usar timestamp en milisegundos como lo hace Binance
       const timestamp = Date.now();
       const queryString = `timestamp=${timestamp}`;
-      const signature = this.generateSignature(queryString);
+      
+      // Generar signature usando la secretKey directamente
+      const signature = this.generateSignature(queryString, secretKey);
+      
+      logger.info(`Timestamp: ${timestamp}`);
+      logger.info(`Query String: ${queryString}`);
+      logger.info(`Signature: ${signature.substring(0, 20)}...`);
       
       // Headers correctos para Binance
       const headers = {
@@ -76,17 +86,26 @@ class BinanceService {
       // URL completa con query string y signature
       const url = `${this.baseURL}/api/v3/account?${queryString}&signature=${signature}`;
       
-      logger.info(`Validando credenciales con URL: ${url}`);
+      logger.info(`URL completa: ${url}`);
       logger.info(`Headers: ${JSON.stringify(headers)}`);
       
       // Usar endpoint que requiera autenticación para validar credenciales
       const response = await axios.get(url, { headers });
 
       logger.info('Credenciales validadas correctamente');
+      logger.info(`=== FIN VALIDACIÓN EXITOSA ===`);
+      
+      // Configurar credenciales solo si la validación fue exitosa
+      this.setCredentials(apiKey, secretKey);
+      
       return response.status === 200;
     } catch (error) {
+      logger.error(`=== ERROR EN VALIDACIÓN ===`);
       logger.error('Error validando credenciales:', error.response?.data || error.message);
+      logger.error('Status:', error.response?.status);
+      logger.error('Headers de respuesta:', error.response?.headers);
       logger.error('Error completo:', error);
+      logger.error(`=== FIN ERROR ===`);
       return false;
     }
   }
