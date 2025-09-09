@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: cryptobot-spot-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        value: https://cryptobot-spot.onrender.com
+      - key: BINANCE_BASE_URL
+        value: https://api.binance.com
+      - key: BINANCE_WS_URL
+        value: wss://stream.binance.com:9443/ws
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
