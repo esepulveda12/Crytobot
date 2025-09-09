@@ -139,7 +139,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 // Iniciar servidor
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, async () => {
+server.listen(PORT, '0.0.0.0', async () => {
   logger.info(`Servidor iniciado en puerto ${PORT}`);
   try {
     await initializeServices();

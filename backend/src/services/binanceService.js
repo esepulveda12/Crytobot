@@ -67,14 +67,16 @@ class BinanceService {
       const queryString = `timestamp=${timestamp}`;
       const signature = this.generateSignature(queryString);
       
+      // Usar endpoint que requiera autenticación para validar credenciales
       const response = await axios.get(
         `${this.baseURL}/api/v3/account?${queryString}&signature=${signature}`,
         { headers: this.createAuthHeaders() }
       );
 
+      logger.info('Credenciales validadas correctamente');
       return response.status === 200;
     } catch (error) {
-      logger.error('Error validando credenciales:', error.message);
+      logger.error('Error validando credenciales:', error.response?.data || error.message);
       return false;
     }
   }
