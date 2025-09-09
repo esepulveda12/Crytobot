@@ -11,7 +11,7 @@ require('dotenv').config();
 const logger = require('./utils/logger');
 const binanceService = require('./services/binanceService');
 const tradingBot = require('./services/tradingBot');
-const authRoutes = require('./routes/auth');
+const { router: authRoutes } = require('./routes/auth');
 const botRoutes = require('./routes/bot');
 const accountRoutes = require('./routes/account');
 const tradesRoutes = require('./routes/trades');
@@ -123,14 +123,14 @@ async function initializeServices() {
     logger.info('Servicios inicializados correctamente');
   } catch (error) {
     logger.error('Error inicializando servicios:', error);
-    process.exit(1);
+    // Continuar ejecutando sin cerrar la aplicación
   }
 }
 
 // Manejo de errores global
 process.on('uncaughtException', (error) => {
   logger.error('Excepción no capturada:', error);
-  process.exit(1);
+  // Continuar ejecutando sin cerrar la aplicación
 });
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -141,7 +141,19 @@ process.on('unhandledRejection', (reason, promise) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, async () => {
   logger.info(`Servidor iniciado en puerto ${PORT}`);
-  await initializeServices();
+  try {
+    await initializeServices();
+    logger.info('Servidor completamente inicializado');
+  } catch (error) {
+    logger.error('Error inicializando servicios:', error);
+    // Continuar ejecutando sin cerrar la aplicación
+  }
+});
+
+// Manejo de errores del servidor
+server.on('error', (error) => {
+  logger.error('Error del servidor:', error);
+  // Continuar ejecutando sin cerrar la aplicación
 });
 
 module.exports = { app, server, wss };

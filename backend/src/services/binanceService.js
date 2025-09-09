@@ -5,8 +5,8 @@ const encryption = require('../utils/encryption');
 
 class BinanceService {
   constructor() {
-    this.baseURL = process.env.BINANCE_BASE_URL || 'https://api.binance.com';
-    this.wsURL = process.env.BINANCE_WS_URL || 'wss://stream.binance.com:9443/ws';
+    this.baseURL = process.env.BINANCE_BASE_URL || 'https://testnet.binance.vision';
+    this.wsURL = process.env.BINANCE_WS_URL || 'wss://testnet.binance.vision/ws';
     this.userCredentials = null;
     this.isInitialized = false;
   }

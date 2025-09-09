@@ -2,10 +2,12 @@
   "name": "cryptobot-spot-backend",
   "version": "1.0.0",
   "description": "Backend para CryptoBot Spot - Trading Bot con Binance API",
-  "main": "src/server.js",
+  "main": "src/server-simple.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "demo": "cp env.demo .env && nodemon src/server.js",
+    "testnet": "cp env.testnet .env && nodemon src/server.js",
     "test": "jest",
     "build": "echo 'No build step required'",
     "postinstall": "echo 'Dependencies installed successfully'"

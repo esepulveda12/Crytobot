@@ -11,11 +11,11 @@ services:
       - key: PORT
         value: 10000
       - key: CORS_ORIGIN
-        value: https://cryptobot-spot.onrender.com
+        value: "*"
       - key: BINANCE_BASE_URL
-        value: https://api.binance.com
+        value: https://testnet.binance.vision
       - key: BINANCE_WS_URL
-        value: wss://stream.binance.com:9443/ws
+        value: wss://testnet.binance.vision/ws
       - key: JWT_SECRET
         generateValue: true
       - key: ENCRYPTION_KEY
