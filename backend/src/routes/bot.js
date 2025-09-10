@@ -5,10 +5,10 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
-// POST /api/bot/start - Iniciar el bot de trading
-router.post('/start', requireAuth, async (req, res) => {
+// POST /api/bot/start - Iniciar el bot de trading (estrategias)
+router.post('/start', async (req, res) => {
   try {
-    const { selectedPair, pullbackPercent, profitTarget, useEMA, trailingStop, trailingPercent } = req.body;
+    const { selectedPair, pullbackPercent, profitTarget, useEMA, trailingStop, trailingPercent, apiKey, secretKey } = req.body;
 
     // Validar parámetros requeridos
     if (!selectedPair || !pullbackPercent || !profitTarget) {
@@ -18,7 +18,13 @@ router.post('/start', requireAuth, async (req, res) => {
       });
     }
 
-    const credentials = getDecryptedCredentials();
+    // Validar credenciales
+    if (!apiKey || !secretKey) {
+      return res.status(400).json({
+        success: false,
+        message: 'Credenciales requeridas: apiKey, secretKey'
+      });
+    }
     
     const config = {
       selectedPair,
@@ -27,8 +33,8 @@ router.post('/start', requireAuth, async (req, res) => {
       useEMA: useEMA || false,
       trailingStop: trailingStop || false,
       trailingPercent: parseFloat(trailingPercent) || 2.0,
-      apiKey: credentials.apiKey,
-      secretKey: credentials.secretKey
+      apiKey: apiKey,
+      secretKey: secretKey
     };
 
     const success = await tradingBot.startBot(config);
@@ -60,7 +66,7 @@ router.post('/start', requireAuth, async (req, res) => {
 });
 
 // POST /api/bot/stop - Detener el bot de trading
-router.post('/stop', requireAuth, async (req, res) => {
+router.post('/stop', async (req, res) => {
   try {
     const success = await tradingBot.stopBot();
 
@@ -90,107 +96,20 @@ router.post('/stop', requireAuth, async (req, res) => {
 });
 
 // GET /api/bot/status - Obtener estado del bot
-router.get('/status', requireAuth, async (req, res) => {
+router.get('/status', async (req, res) => {
   try {
-    const status = tradingBot.getStatus();
-
-    res.json({
-      success: true,
-      data: status
-    });
-
-  } catch (error) {
-    logger.error('Error obteniendo estado del bot:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo estado del bot'
-    });
-  }
-});
-
-// GET /api/bot/logs - Obtener logs del bot
-router.get('/logs', requireAuth, async (req, res) => {
-  try {
-    const logs = tradingBot.getLogs();
+    const status = await tradingBot.getStatus();
 
     res.json({
       success: true,
       data: {
-        logs: logs,
-        count: logs.length,
+        status: status,
         timestamp: new Date().toISOString()
       }
     });
 
   } catch (error) {
-    logger.error('Error obteniendo logs:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error obteniendo logs del bot'
-    });
-  }
-});
-
-// PUT /api/bot/config - Actualizar configuración del bot
-router.put('/config', requireAuth, async (req, res) => {
-  try {
-    const { selectedPair, pullbackPercent, profitTarget, useEMA, trailingStop, trailingPercent } = req.body;
-
-    if (!selectedPair || !pullbackPercent || !profitTarget) {
-      return res.status(400).json({
-        success: false,
-        message: 'Parámetros requeridos: selectedPair, pullbackPercent, profitTarget'
-      });
-    }
-
-    const credentials = getDecryptedCredentials();
-    
-    const config = {
-      selectedPair,
-      pullbackPercent: parseFloat(pullbackPercent),
-      profitTarget: parseFloat(profitTarget),
-      useEMA: useEMA || false,
-      trailingStop: trailingStop || false,
-      trailingPercent: parseFloat(trailingPercent) || 2.0,
-      apiKey: credentials.apiKey,
-      secretKey: credentials.secretKey
-    };
-
-    // Si el bot está corriendo, reiniciarlo con la nueva configuración
-    if (tradingBot.isRunning) {
-      await tradingBot.stopBot();
-      const success = await tradingBot.startBot(config);
-      
-      if (success) {
-        res.json({
-          success: true,
-          message: 'Configuración actualizada y bot reiniciado',
-          data: {
-            config: config,
-            status: 'running',
-            timestamp: new Date().toISOString()
-          }
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Error actualizando configuración'
-        });
-      }
-    } else {
-      res.json({
-        success: true,
-        message: 'Configuración actualizada',
-        data: {
-          config: config,
-          status: 'stopped',
-          timestamp: new Date().toISOString()
-        }
-      });
-    }
-
-  } catch (error) {
-    logger.error('Error actualizando configuración:', error);
+    logger.error('Error obteniendo estado del bot:', error);
     res.status(500).json({
       success: false,
       message: 'Error interno del servidor'
@@ -198,41 +117,26 @@ router.put('/config', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/bot/analytics - Obtener datos analíticos del bot
-router.get('/analytics', requireAuth, async (req, res) => {
+// GET /api/bot/config - Obtener configuración actual del bot
+router.get('/config', async (req, res) => {
   try {
-    const status = tradingBot.getStatus();
-    const logs = tradingBot.getLogs();
-
-    // Calcular estadísticas básicas
-    const buyLogs = logs.filter(log => log.type === 'buy');
-    const sellLogs = logs.filter(log => log.type === 'sell');
-    const errorLogs = logs.filter(log => log.type === 'error');
-
-    const analytics = {
-      totalTrades: buyLogs.length,
-      completedTrades: sellLogs.length,
-      openPositions: status.currentPosition ? 1 : 0,
-      errors: errorLogs.length,
-      uptime: status.isRunning ? 'running' : 'stopped',
-      currentPrice: status.maxPrice || 0,
-      entryPrice: status.entryPrice || 0,
-      stopLoss: status.stopLoss || 0,
-      trailingStop: status.trailingStopPrice || 0
-    };
+    const config = await tradingBot.getConfig();
 
     res.json({
       success: true,
-      data: analytics
+      data: {
+        config: config,
+        timestamp: new Date().toISOString()
+      }
     });
 
   } catch (error) {
-    logger.error('Error obteniendo analytics:', error);
+    logger.error('Error obteniendo configuración del bot:', error);
     res.status(500).json({
       success: false,
-      message: 'Error obteniendo datos analíticos'
+      message: 'Error interno del servidor'
     });
   }
 });
 
-module.exports = router;
+module.exports = { router };
