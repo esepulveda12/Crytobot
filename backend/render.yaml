@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: cryptobot-spot-backend
+    name: cryptobot-backend
     env: node
     plan: free
     buildCommand: npm install
@@ -12,17 +12,3 @@ services:
         value: 10000
       - key: CORS_ORIGIN
         value: "*"
-      - key: BINANCE_BASE_URL
-        value: https://testnet.binance.vision
-      - key: BINANCE_WS_URL
-        value: wss://testnet.binance.vision/ws
-      - key: JWT_SECRET
-        generateValue: true
-      - key: ENCRYPTION_KEY
-        generateValue: true
-      - key: LOG_LEVEL
-        value: info
-      - key: RATE_LIMIT_WINDOW_MS
-        value: 900000
-      - key: RATE_LIMIT_MAX_REQUESTS
-        value: 100

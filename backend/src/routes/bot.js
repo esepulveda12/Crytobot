@@ -1,6 +1,5 @@
 const express = require('express');
 const tradingBot = require('../services/tradingBot');
-const { getDecryptedCredentials, requireAuth } = require('./auth');
 const logger = require('../utils/logger');
 
 const router = express.Router();
